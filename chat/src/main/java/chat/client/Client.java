@@ -1,9 +1,13 @@
 package chat.client;
 
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 
 public class Client {
     String username;
@@ -47,17 +51,36 @@ public class Client {
             System.out.println("Failed to connect to " + this.server);
             e.printStackTrace();
         }
+    }
+
+    public void login(){
         try {
             connection.login(this.username, this.password);
-            System.out.println("Logged in as " + "orlandotest");
+            System.out.println("Logged in as " + this.username);
         } catch (XMPPException e) {
             e.printStackTrace();
-            System.out.println("Failed to log in as " + "orlandotest");
+            System.out.println("Failed to log in as " + this.username);
+        }
+    }
+
+    public void sendMessage(String message, String to){
+        // send a message to a user
+        ChatManager chatmanager = connection.getChatManager();
+        Chat chat = chatmanager.createChat(to, new MessageListener() {
+            @Override
+            public void processMessage(Chat chat, Message message) {
+                System.out.println("Received message: " + message.getBody());
+            }
+        });
+        try {
+            chat.sendMessage(message);
+        } catch (XMPPException e) {
+            e.printStackTrace();
         }
     }
 
     public void dissconect() throws XMPPException{
-        Connection connection = new XMPPConnection(this.server);
+        connection = new XMPPConnection(this.server);
         connection.disconnect();
         System.out.println("Disconnected from " + this.server);
     }
