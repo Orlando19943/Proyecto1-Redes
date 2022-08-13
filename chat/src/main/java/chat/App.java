@@ -27,7 +27,6 @@ public class App
     public static String[] loginOptions(){
         String username = "";
         char[] password = {};
-        String host = "";
         // loops while the user doesnt enter a valid username, password or hostname
         while (username.length() == 0) {
             System.out.print("\nIngrese su nombre de usuario: ");
@@ -37,28 +36,44 @@ public class App
             System.out.print("\nIngrese su contraseña: ");
             password = System.console().readPassword();
         }
+        return new String []{username, String.valueOf(password)};
+    }
+
+    public static String hostName(){
+        String host = "";
         while (host.length() == 0) {
             System.out.print("\nIngrese el host del servidor: ");
             host = System.console().readLine();
         }
-        return new String []{username, String.valueOf(password), host};
+        return host;
     }
     public static void main( String[] args ) throws XMPPException 
     {
+        boolean run = false;
         String[] infoUser;
         String message, to;
         int option, n = 3;
-        Client client;
-        System.out.print("Bienvenido al chat");
-        /* option = mainMenu();
-        while (option < 0 || option > 3) {
-            System.out.print("\nIngrese una opción válida: ");
-            option = mainMenu();
-        } */
+        String host = "";
+        Client client = new Client ("","","",true);
+        host = hostName();
+        client.setServer(host);
+        while (!client.connect()){
+            System.out.printf("No se ha logrado conectar con el host...\n");
+            System.out.printf("Ingrese nuevamente el host \n");
+            host = hostName();
+            client.setServer(host);
+        }
         infoUser = loginOptions();
-        client = new Client(infoUser[0], infoUser[1], infoUser[2]);
-        client.connect();
-        client.login();
+        client.setUsername(infoUser[0]);
+        client.setPassword(infoUser[1]);
+        while (!client.login()){
+            System.out.printf("No se ha logrado iniciar sesión, contraseña o usuario incorrectos...\n");
+            infoUser = loginOptions();
+            client.connect();
+            client.setUsername(infoUser[0]);
+            client.setPassword(infoUser[1]);
+        }
+        client.recieveMessage();
         option = mainMenu();
         while (option < n){
             switch (option) {
@@ -83,6 +98,6 @@ public class App
                     break;
             }
         }
-        client.dissconect();
+        client.disconect();
     }
 }
