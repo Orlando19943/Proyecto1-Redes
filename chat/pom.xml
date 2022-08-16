@@ -21,6 +21,34 @@
   <dependencies>
 
     <dependency>
+      <groupId>org.jxmpp</groupId>
+      <artifactId>jxmpp-jid</artifactId>
+      <version>1.1.0-alpha1</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.igniterealtime.jxmpp</groupId>
+      <artifactId>jxmpp-jid</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.mobicents.slee.resource.smack</groupId>
+      <artifactId>smackx-jingle</artifactId>
+      <version>3.0.4</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>jivesoftware</groupId>
+      <artifactId>smackx</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+
+
+    <dependency>
       <groupId>org.igniterealtime.smack</groupId>
       <artifactId>smack</artifactId>
       <version>3.2.1</version>

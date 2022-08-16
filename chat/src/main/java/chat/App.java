@@ -18,7 +18,7 @@ public class App
     public static int mainMenu(){
         System.out.print("\nEscoja una opción");
         System.out.print("\n1. Enviar mensaje");
-        System.out.print("\n2. Ver mensajes");
+        System.out.print("\n2. Ver usuarios conectados");
         System.out.print("\n3. Salir");
         System.out.print("\n-> ");
         int option = Integer.parseInt(System.console().readLine());
@@ -54,7 +54,7 @@ public class App
         String message, to;
         int option, n = 3;
         String host = "";
-        Client client = new Client ("","","",true);
+        Client client = new Client ("","","",false);
         host = hostName();
         client.setServer(host);
         while (!client.connect()){
@@ -87,6 +87,8 @@ public class App
                     option = mainMenu();
                     break;
                 case 2:
+                    System.out.print("\nUsuarios conectados: ");
+                    client.getFriends();
                     option = mainMenu();
                     break;
                 case 3:
