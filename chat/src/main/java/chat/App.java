@@ -6,6 +6,9 @@ import chat.client.Client;
 public class App 
 {
     static Client client;
+    /*
+     * Options to be used at the beggining of the program
+     */
     public static String init(){
         System.out.println("1. Login");
         System.out.println("2. Register");
@@ -13,6 +16,9 @@ public class App
         String option = System.console().readLine();
         return option;
     }
+    /*
+     * Options to be used to get the username, password and server name
+     */
     public static String[] userInformation(){
         String host = "";
         String username = "";
@@ -32,9 +38,13 @@ public class App
         return new String []{host, username, String.valueOf(password)};
     }
 
+    /*
+     * Options to be used after the user has logged in
+     */
     public static void online(){
         String message,to,group, username, status, type, delete, option, user, room = "";
         Object[] friends;
+        client.notifications();
         do {
             System.out.println("\n1. Send a message");
             System.out.println("2. Send a group message");
@@ -43,9 +53,10 @@ public class App
             System.out.println("5. Add friend");
             System.out.println("6. Join a group chat");
             System.out.println("7. Change status");
-            System.out.println("8. Send a file");
-            System.out.println("9. Delete account");
-            System.out.println("10. Logout");
+            System.out.println("8. Notifications");
+            System.out.println("9. Send a file");
+            System.out.println("10. Delete account");
+            System.out.println("11. Logout");
             System.out.print("-> ");
             option = System.console().readLine();
             try {
@@ -101,18 +112,21 @@ public class App
                         }
                         break;
                     case "8":
+                        client.notifications();
+                        break;
+                    case "9":
                         break;
                         
-                    case "9":
+                    case "10":
                         System.out.print("\nAre you sure about delete your account?\n1. Yes\n2.No: \n-> ");
                         delete = System.console().readLine();
                         if (delete.equals("1")){
                             System.out.print("\nDeleting your account...");
                             client.deleteUser();
-                            option = "9";
+                            option = "11";
                         }
                         break;
-                    case "10":
+                    case "11":
                         break;
                     default:
                         System.out.println("\nInvalid option");
@@ -121,7 +135,7 @@ public class App
             } catch (Exception e) {
                 System.out.println("Invalid option");
             }
-        }while (!option.equals("10"));
+        }while (!option.equals("11"));
     }
     public static void main(String[] args) throws XMPPException {
         System.out.println("Welcome to chat");
