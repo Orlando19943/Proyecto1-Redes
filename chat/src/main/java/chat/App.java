@@ -53,7 +53,7 @@ public class App
             System.out.println("5. Add friend");
             System.out.println("6. Join a group chat");
             System.out.println("7. Change status");
-            System.out.println("8. Notifications");
+            System.out.println("8. Accept friend request");
             System.out.println("9. Send a file");
             System.out.println("10. Delete account");
             System.out.println("11. Logout");
@@ -112,7 +112,11 @@ public class App
                         }
                         break;
                     case "8":
-                        client.notifications();
+                        System.out.print("\nEnter the name of the user: ");
+                        to = System.console().readLine();
+                        System.out.print("\n1.Accept\n2.Reject\n-> ");
+                        type = System.console().readLine();
+                        client.acceptRequest(to, Integer.parseInt(type));
                         break;
                     case "9":
                         break;
@@ -127,6 +131,7 @@ public class App
                         }
                         break;
                     case "11":
+                        client.disconect();
                         break;
                     default:
                         System.out.println("\nInvalid option");
@@ -177,6 +182,5 @@ public class App
                 System.out.println("Invalid option");
             }
         }while(!option.equals("3"));
-        client.disconect();
     }
 }

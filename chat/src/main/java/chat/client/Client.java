@@ -262,7 +262,6 @@ public class Client {
         } else {
             return user + " -> " + presence.getType();
         }
-        //System.out.println(user + " -> "+ connection.getRoster().getPresence(user).getType());
     }
 
     /*
@@ -313,7 +312,9 @@ public class Client {
         }
         return friendsList.toArray();
     }
-    // TODO
+    /*
+     * add a friend to your roster
+     */
     public void addFriend(String user){
         Presence presence = new Presence(Presence.Type.subscribe);
         presence.setTo(user);
@@ -321,7 +322,6 @@ public class Client {
             connection.getRoster().createEntry(user, user, null);
             System.out.println("Added user " + user);
         } catch (XMPPException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         };
     }
@@ -337,10 +337,6 @@ public class Client {
         joinPresence.setTo(room + "/" + username);
         connection.sendPacket(joinPresence);
         return true;
-    }
-    // TODO
-    public void showUsers(){
-        Connection.addConnectionCreationListener(connectionCreationListener);
     }
 
     /*
@@ -370,7 +366,11 @@ public class Client {
             e.printStackTrace();
         }
     }
-    // send file to a user
+    /* 
+     * Send a file to a user (Not Working)
+     * @param to -> the user to send the file
+     * @param file -> the file to send
+    */
     public boolean sendFile(String to, String filename){
         FileTransferNegotiator.IBB_ONLY = true;
         try {
@@ -386,7 +386,9 @@ public class Client {
         }
 
     }
-    // TODO: modificar esta funcion
+    /* 
+     * Receives a file from a user (Not Working)
+    */
     public void receiveFile(){
         FileTransferListener listener = new FileTransferListener() {
             @Override
@@ -416,22 +418,20 @@ public class Client {
         connection.addPacketListener(presenceListener, new PacketTypeFilter(Presence.class));
         //System.out.println("Unfiled entries: " + connection.getRoster().getEntryCount());
     }
-    // TODO
-    public void showNotifications(){
-        // show presence
-        Collection<RosterEntry> unfiledEntries = connection.getRoster().getUnfiledEntries();
-        for (RosterEntry unfiledEntry: unfiledEntries){
-            System.out.println("Unfiled entry: " + unfiledEntry.getUser());
+    /*
+     * Accept a suscription request
+     * @param user -> the user to accept the suscription request
+    */
+    public void acceptRequest(String user, int type){
+        // type = 1 -> accept, type = 2 -> reject
+        Presence subscription;
+        if (type == 1){
+            subscription = new Presence(Presence.Type.subscribed);
+        } else {
+            subscription = new Presence(Presence.Type.unsubscribed);
         }
-    }
-    // TODO
-    public void acceptRequest(String user){
-        try {
-            Jid jid = JidCreate.from(user);
-            connection.getRoster().createEntry(user, user, new String[]{"Friends"});
-        } catch (XMPPException |XmppStringprepException e) {
-            System.out.println("Failed to accept request from " + user);
-        }
+        subscription.setTo(user);
+        connection.sendPacket(subscription);
     }
 
     /* 
