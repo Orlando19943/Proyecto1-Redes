@@ -5,101 +5,164 @@ import chat.client.Client;
 
 public class App 
 {
-    public static int principalMenu() {
-        System.out.print("\nEscoja una opción");
-        System.out.print("\n1. Crear cuenta");
-        System.out.print("\n2. Iniciar sesión");
-        System.out.print("\n3. Salir");
-        System.out.print("\n-> ");
-        int option = Integer.parseInt(System.console().readLine());
+    static Client client;
+    public static String init(){
+        System.out.println("1. Login");
+        System.out.println("2. Register");
+        System.out.println("3. Exit");
+        String option = System.console().readLine();
         return option;
     }
-
-    public static int mainMenu(){
-        System.out.print("\nEscoja una opción");
-        System.out.print("\n1. Enviar mensaje");
-        System.out.print("\n2. Ver usuarios conectados");
-        System.out.print("\n3. Salir");
-        System.out.print("\n-> ");
-        int option = Integer.parseInt(System.console().readLine());
-        return option;
-    }
-    public static String[] loginOptions(){
+    public static String[] userInformation(){
+        String host = "";
         String username = "";
         char[] password = {};
-        // loops while the user doesnt enter a valid username, password or hostname
+        while (host.length() == 0) {
+            System.out.print("\nServer: ");
+            host = System.console().readLine();
+        }
         while (username.length() == 0) {
-            System.out.print("\nIngrese su nombre de usuario: ");
+            System.out.print("\nUsername: ");
             username = System.console().readLine();
         }
         while (password.length == 0) {
-            System.out.print("\nIngrese su contraseña: ");
+            System.out.print("\nPassword: ");
             password = System.console().readPassword();
         }
-        return new String []{username, String.valueOf(password)};
+        return new String []{host, username, String.valueOf(password)};
     }
 
-    public static String hostName(){
-        String host = "";
-        while (host.length() == 0) {
-            System.out.print("\nIngrese el host del servidor: ");
-            host = System.console().readLine();
-        }
-        return host;
-    }
-    public static void main( String[] args ) throws XMPPException 
-    {
-        boolean run = false;
-        String[] infoUser;
-        String message, to;
-        int option, n = 3;
-        String host = "";
-        Client client = new Client ("","","",false);
-        host = hostName();
-        client.setServer(host);
-        while (!client.connect()){
-            System.out.printf("No se ha logrado conectar con el host...\n");
-            System.out.printf("Ingrese nuevamente el host \n");
-            host = hostName();
-            client.setServer(host);
-        }
-        infoUser = loginOptions();
-        client.setUsername(infoUser[0]);
-        client.setPassword(infoUser[1]);
-        while (!client.login()){
-            System.out.printf("No se ha logrado iniciar sesión, contraseña o usuario incorrectos...\n");
-            infoUser = loginOptions();
-            client.connect();
-            client.setUsername(infoUser[0]);
-            client.setPassword(infoUser[1]);
-        }
-        client.recieveMessage();
-        option = mainMenu();
-        while (option < n){
-            switch (option) {
-                case 1:
-                    System.out.print("\nIngrese el nombre del usuario para mandar un mensaje: ");
-                    to = System.console().readLine();
-                    System.out.print("\nIngrese el mensaje: ");
-                    System.out.print("\n-> ");
-                    message = System.console().readLine();
-                    client.sendMessage(message,to);
-                    option = mainMenu();
-                    break;
-                case 2:
-                    System.out.print("\nUsuarios conectados: ");
-                    client.getFriends();
-                    option = mainMenu();
-                    break;
-                case 3:
-                    option = n;
-                    break;
-                default:
-                    System.out.print("\nIngrese una opción válida: ");
-                    option = mainMenu();
-                    break;
+    public static void online(){
+        String message,to,group, username, status, type, delete, option, user, room = "";
+        Object[] friends;
+        do {
+            System.out.println("\n1. Send a message");
+            System.out.println("2. Send a group message");
+            System.out.println("3. Find user");
+            System.out.println("4. Show friends");
+            System.out.println("5. Add friend");
+            System.out.println("6. Join a group chat");
+            System.out.println("7. Change status");
+            System.out.println("8. Send a file");
+            System.out.println("9. Delete account");
+            System.out.println("10. Logout");
+            System.out.print("-> ");
+            option = System.console().readLine();
+            try {
+                switch (option) {
+                    case "1":
+                        System.out.print("\nTo: ");
+                        to = System.console().readLine();
+                        System.out.print("\nMessage: ");
+                        message = System.console().readLine();
+                        client.sendMessage(message, to);
+                        break;
+                    case "2":
+                        System.out.print("\nGroup: ");
+                        room = System.console().readLine();
+                        System.out.print("\nMessage: ");
+                        message = System.console().readLine();
+                        client.sendMessageGroup(message, room);
+                        break;
+                    case "3":
+                        System.out.print("\nUsername: ");
+                        to = System.console().readLine();
+                        user = client.findUser(to);
+                        System.out.println(user);
+                        break;
+                    case "4":
+                        friends = client.getFriends();
+                        System.out.println("\nFriends:");
+                        for(int i = 0; i < friends.length; i++){
+                            System.out.println(friends[i]);
+                        }
+                        break;
+                    case "5":
+                        System.out.print("\nEnter the name of the user: ");
+                        to = System.console().readLine();
+                        client.addFriend(to);
+                        break;
+                    case "6":
+                        System.out.print("\nEnter the name of the group chat: ");
+                        group = System.console().readLine();
+                        System.out.print("\nEnter a username: ");
+                        username = System.console().readLine();
+                        client.joinRoom(group, username);
+                        break;
+                    case "7":
+                        System.out.print("\n1. Unavailable\n2. Available\n-> ");
+                        type = System.console().readLine();
+                        System.out.print("\nEnter a status message: ");
+                        status = System.console().readLine();
+                        try{
+                            client.changeStatus(Integer.parseInt(type), status);
+                        } catch (NumberFormatException e){
+                            System.out.println("Invalid option");
+                        }
+                        break;
+                    case "8":
+                        break;
+                        
+                    case "9":
+                        System.out.print("\nAre you sure about delete your account?\n1. Yes\n2.No: \n-> ");
+                        delete = System.console().readLine();
+                        if (delete.equals("1")){
+                            System.out.print("\nDeleting your account...");
+                            client.deleteUser();
+                            option = "9";
+                        }
+                        break;
+                    case "10":
+                        break;
+                    default:
+                        System.out.println("\nInvalid option");
+                        break;
+                }
+            } catch (Exception e) {
+                System.out.println("Invalid option");
             }
-        }
+        }while (!option.equals("10"));
+    }
+    public static void main(String[] args) throws XMPPException {
+        System.out.println("Welcome to chat");
+        String username,host,password,option, optionOnline = "";
+        String[] userInfo;
+        client = new Client("","","", false);
+        do{
+            option = init();
+            try {
+                switch (Integer.parseInt(option)) {
+                    case 1:
+                        userInfo = userInformation();
+                        client.setServer(userInfo[0]);
+                        client.setUsername(userInfo[1]);
+                        client.setPassword(userInfo[2]);
+                        client.connect();
+                        client.login();
+                        online();
+                        System.out.println("\nLogged in");
+                        break;
+                    case 2:
+                        userInfo = userInformation();
+                        client.setServer(userInfo[0]);
+                        client.setUsername(userInfo[1]);
+                        client.setPassword(userInfo[2]);
+                        client.connect();
+                        client.createUser();
+                        client.login();
+                        online();
+                        break;
+                    case 3:
+                        System.out.println("Bye");
+                        break;
+                    default:
+                        System.out.println("Invalid option");
+                        break;
+                }
+            } catch (Exception e) {
+                System.out.println("Invalid option");
+            }
+        }while(!option.equals("3"));
         client.disconect();
     }
 }

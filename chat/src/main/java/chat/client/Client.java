@@ -1,17 +1,17 @@
 package chat.client;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
-import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionCreationListener;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.RosterListener;
 import org.jivesoftware.smack.XMPPConnection;
@@ -23,17 +23,9 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Presence.Type;
-import org.jivesoftware.smackx.filetransfer.FileTransfer;
-import org.jivesoftware.smackx.filetransfer.FileTransferListener;
 import org.jivesoftware.smackx.filetransfer.FileTransferManager;
-import org.jivesoftware.smackx.filetransfer.FileTransferNegotiator;
-import org.jivesoftware.smackx.filetransfer.FileTransferRequest;
-import org.jivesoftware.smackx.filetransfer.IncomingFileTransfer;
-import org.jivesoftware.smackx.filetransfer.OutgoingFileTransfer;
-import org.jivesoftware.smackx.filetransfer.StreamNegotiator;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.jivesoftware.smack.debugger.SmackDebugger;
-import org.jxmpp.jid.Jid;
+import org.w3c.dom.TypeInfo;
 
 public class Client {
     String username;
@@ -42,6 +34,7 @@ public class Client {
     XMPPConnection connection;
     ChatManager chatManager;
     PacketListener packetListener;
+    PacketListener groupPacketListener;
     RosterListener roasterListener;
     MessageListener messageListener;
     ConnectionCreationListener connectionCreationListener;
@@ -57,7 +50,18 @@ public class Client {
             @Override
             public void processPacket(Packet packet) {
                 Message message = (Message) packet;
-                System.out.println(message.getFrom() + ": " + message.getBody());
+                if (message.getBody() != null) {
+                    System.out.println(message.getFrom() + ": " + message.getBody());
+                }
+            }
+        };
+        this.groupPacketListener = new PacketListener() {
+            @Override
+            public void processPacket(Packet packet) {
+                Message message = (Message) packet;
+                if (message.getBody() != null) {
+                    System.out.println(message.getFrom() + ": " + message.getBody());
+                }
             }
         };
         this.roasterListener = new RosterListener() {
@@ -138,7 +142,7 @@ public class Client {
             System.out.println("Logged in as " + this.username +"@" + connection.getServiceName());
             this.chatManager = connection.getChatManager();
             this.getRoaster();
-            this.fileManager = new FileTransferManager(connection);
+            this.receiveMessage();
             return true;
         } catch (XMPPException e) {
             System.out.println("Failed to log in as " + this.username);
@@ -173,18 +177,27 @@ public class Client {
     }
 
     public String findUser(String user){
-        // details of the user
-        System.out.println(user + " -> "+ connection.getRoster().getPresence(user).getType());
-        return String.valueOf(connection.getRoster().getPresence(user).getType());
+        Collection<RosterEntry> friends = connection.getRoster().getEntries();
+        ArrayList<String> friendsList = new ArrayList<String>();
+        Presence presence;
+        presence = connection.getRoster().getPresence(user);
+        if (presence.getStatus() != null){
+            return user + " -> " + presence.getType() + " -> " + presence.getStatus();
+        } else {
+            return user + " -> " + presence.getType();
+        }
+        //System.out.println(user + " -> "+ connection.getRoster().getPresence(user).getType());
     }
 
-    public void changeStatus(int type){
+    public void changeStatus(int type, String msg){
         // 1 = unavailable, 2 = available (default)
-        Presence presence = new Presence(Type.available);
+        Presence presence = connection.getRoster().getPresence(this.username);
         if (type == 1){
-            presence = new Presence(Type.unavailable);
-        } 
-        presence.setStatus("status");
+            presence.setType(Presence.Type.unavailable);
+        } else{
+            presence.setType(Presence.Type.available);
+        }
+        presence.setStatus(msg);
         connection.sendPacket(presence);
     }
 
@@ -199,8 +212,20 @@ public class Client {
         }
     }
 
-    public void getFriends(){
-        System.out.println("Users: " + connection.getRoster().getEntries());
+    public Object[] getFriends(){
+        //System.out.println("Users: " + connection.getRoster().getEntries().toString());
+        Collection<RosterEntry> friends = connection.getRoster().getEntries();
+        ArrayList<String> friendsList = new ArrayList<String>();
+        Presence presence;
+        for (RosterEntry friend: friends){
+            presence = connection.getRoster().getPresence(friend.getUser());
+            if (presence.getStatus() != null){
+                friendsList.add(friend.getUser() + " -> " + presence.getType() + " -> " + presence.getStatus());
+            } else {
+                friendsList.add(friend.getUser() + " -> " + presence.getType());
+            }
+        }
+        return friendsList.toArray();
     }
 
     public void addFriend(String user){
@@ -223,31 +248,6 @@ public class Client {
         Connection.addConnectionCreationListener(connectionCreationListener);
     }
 
-    // send file
-    public boolean sendFile(String user, String path){
-        FileTransferNegotiator.setServiceEnabled(connection, true);
-        try {
-                FileTransferNegotiator.IBB_ONLY = true;
-                OutgoingFileTransfer stream = this.fileManager.createOutgoingFileTransfer(user);
-                // when the stream negotiation is done know it can transfer files
-                File file = new File(path);
-                System.out.println(file.getAbsolutePath());
-                // It has an error with the file
-                if (!file.canRead()) return false;
-
-                stream.sendFile(file, "file");
-                
-                while(!stream.isDone()){
-                    System.out.println(stream.getProgress());
-                    System.out.println(stream.getStatus());
-                    System.out.println(stream.getBytesSent());
-                }
-
-                return true;
-            } catch (XMPPException e) {
-                return false;
-            }
-    }
     public void sendMessage(String message, String to){
         Chat chat = this.chatManager.createChat(to, messageListener);
         try {
@@ -258,17 +258,19 @@ public class Client {
     }
 
     public void sendMessageGroup(String message, String room){
-        MultiUserChat multiUserChat = new MultiUserChat(this.connection, room);
+        MultiUserChat multiUserChat = new MultiUserChat(connection, room);
         try {
             multiUserChat.sendMessage(message);
+            multiUserChat.addMessageListener(groupPacketListener);
         } catch (XMPPException e) {
             e.printStackTrace();
         }
     }
-    public void recieveMessage(){
-        connection.addPacketListener(packetListener, new MessageTypeFilter(Message.Type.chat));
-        connection.addPacketListener(packetListener, new MessageTypeFilter(Message.Type.groupchat));
+    // receive message
+    public void receiveMessage(){
+        connection.addPacketListener(packetListener, new PacketTypeFilter(Message.class));
     }
+
 
 
     public void disconect() throws XMPPException{
