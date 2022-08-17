@@ -9,8 +9,7 @@
   <version>chat</version>
 
   <name>chat</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <url>https://github.com/Orlando19943/Proyecto1-Redes</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -122,6 +121,7 @@
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <configuration>
+            <appendAssemblyId>false</appendAssemblyId>
             <archive>
               <manifest>
                 <mainClass>chat.App</mainClass>

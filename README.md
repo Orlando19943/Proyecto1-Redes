@@ -2,6 +2,21 @@
 
 Simple implementation of a Chat using the Xmpp protocol. This proyect was made in Java 17.
 
+## How to run
+⚠ Important, in order to execute the program, you should have maven and java 
+Compile the program using maven
+```sh
+   mvn clean compile assembly:single
+```
+Move to the directory target
+```sh
+   cd .\target
+```
+Run the program
+```sh
+   java -jar .\chat-chat.jar
+```
+
 ## Features
 
 - [X] Register a new account
@@ -24,12 +39,12 @@ Simple implementation of a Chat using the Xmpp protocol. This proyect was made i
   - [ ] Send
   - [ ] Receive
 
-# Technologies Used
+## Built With
 
 - Smack 3.2.1
 - Smackx 3.1.0
 - Maven 3.8.6
 
-# Author
+## Author
 
 Orlando Osberto Cabrera Mejía
